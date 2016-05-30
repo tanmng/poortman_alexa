@@ -135,7 +135,7 @@ case $command in
                 # Read the file and get the audio output
                 grep -a -A5000 -m2 -e "Content-Type: audio/mpeg" response.txt | mpg123 -
 
-                rm -f response.txt
+                rm -f response.txt hello.wav
             fi
         else
             echo "  $DATA_TRANSFER_FILE is too old, no usable token"
