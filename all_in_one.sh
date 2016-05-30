@@ -124,7 +124,7 @@ case $command in
             else
                 # Record audio
                 sox -d -c 1 -r 16000 -e signed -b 16 hello.wav
-                
+
                 curl -i \
                     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
                     -F "metadata=<metadata.json;type=application/json; charset=UTF-8" \
