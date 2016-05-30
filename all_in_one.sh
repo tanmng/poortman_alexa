@@ -16,6 +16,7 @@ DEVICE_SERIAL_NUMBER=123
 
 # Custom settings for the script
 DATA_TRANSFER_FILE="/tmp/poorman_alexa.txt"
+OUTPUT_AUDIO_FILE="/tmp/outaudio.txt"
 
 # Logging
 date
@@ -103,6 +104,41 @@ case $command in
             fi
         else
             echo "  $DATA_TRANSFER_FILE is too old, we can't refresh its code"
+        fi
+    fi
+    echo "  Done"
+    ;;
+4)
+    # Send request wav file
+    # Check if the file exists
+    if [ ! -f $DATA_TRANSFER_FILE ]; then
+        echo "  Error. $DATA_TRANSFER_FILE missing"
+    else
+        # Check if the file is new, if it's too old - chances are token already expire
+        if test `find "$DATA_TRANSFER_FILE" -mmin -60`
+        then
+            # Check if we have "refresh_token" in the file
+            ACCESS_TOKEN=$(jq -er '.access_token' < $DATA_TRANSFER_FILE)
+            if [ $? -ne 0 ]; then
+                echo "  Refresh_token missing from $DATA_TRANSFER_FILE"
+            else
+                # Record audio
+                sox -d -c 1 -r 16000 -e signed -b 16 hello.wav
+                
+                curl -i \
+                    -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                    -F "metadata=<metadata.json;type=application/json; charset=UTF-8" \
+                    -F "audio=<hello.wav;type=audio/L16; rate=16000; channels=1" \
+                    -o response.txt \
+                    https://access-alexa-na.amazon.com/v1/avs/speechrecognizer/recognize
+
+                # Read the file and get the audio output
+                grep -a -A5000 -m2 -e "Content-Type: audio/mpeg" response.txt | mpg123 -
+
+                rm -f response.txt
+            fi
+        else
+            echo "  $DATA_TRANSFER_FILE is too old, no usable token"
         fi
     fi
     echo "  Done"
