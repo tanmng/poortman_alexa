@@ -6,7 +6,8 @@ Just want to try it out a little bit
 
 * sox
 * jq
+* mpg123
 
 ```bash
-brew install sox jq
+brew install sox jq mpg123
 ```
