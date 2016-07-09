@@ -13,6 +13,11 @@ CLIENT_ID="amzn1.application-oa2-client.9baf14e91a2c40cb9d925b06b94e6409"
 CLIENT_SECRET="4d01be7f0e48ccf2f8bc80edaf3ed6a5c4e1369b85bec9815f3de7340ee2a7a4"
 REDIRECT_URI="https://localhost:9745/authresponse"
 DEVICE_SERIAL_NUMBER=123
+METADATA_FILE=/tmp/$(date +'%m-%d-%Y')-metadata.json
+
+
+# Create the Metadata in tmp directory with timestamp to avoid any duplication
+echo ' { "messageHeader": {}, "messageBody": { "profile": "alexa-close-talk", "locale": "en-us", "format": "audio/L16; rate=16000; channels=1" } } ' > $METADATA_FILE
 
 # Custom settings for the script
 DATA_TRANSFER_FILE="/tmp/poorman_alexa.txt"
@@ -127,7 +132,7 @@ case $command in
 
                 curl -i \
                     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-                    -F "metadata=<metadata.json;type=application/json; charset=UTF-8" \
+                    -F "metadata=<${METADATA_FILE};type=application/json; charset=UTF-8" \
                     -F "audio=<hello.wav;type=audio/L16; rate=16000; channels=1" \
                     -o response.txt \
                     https://access-alexa-na.amazon.com/v1/avs/speechrecognizer/recognize
@@ -147,3 +152,6 @@ case $command in
     echo "Unrecognized command"
     ;;
 esac
+
+# Clean up that metadata file
+rm -f ${METADATA_FILE} 2> /dev/null
